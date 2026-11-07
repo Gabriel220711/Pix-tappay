@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TapPay - Pix</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #f3f5f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      width: 100%;
+      max-width: 380px;
+      padding: 30px 22px;
+      border-radius: 22px;
+      text-align: center;
+      box-shadow: 0 8px 30px #00000012;
+    }
+
+    .logo {
+      font-size: 30px;
+      font-weight: bold;
+      color: #087d58;
+    }
+
+    .subtitle {
+      color: #777;
+      margin-bottom: 24px;
+    }
+
+    #qrcode {
+      display: flex;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+    #qrcode img, #qrcode canvas {
+      max-width: 210px;
+      height: auto;
+    }
+
+    .pix-label {
+      color: #555;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background: #087d58;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    button:active {
+      opacity: .8;
+    }
+
+    .footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: #999;
+    }
+
+    #status {
+      font-size: 13px;
+      color: #087d58;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="card">
+
+    <div class="logo">TapPay</div>
+    <p class="subtitle">Pagamento rápido e fácil</p>
+
+    <h3>Escaneie o QR Code Pix</h3>
+
+    <div id="qrcode"></div>
+
+    <p class="pix-label">Ou copie o código Pix abaixo:</p>
+
+    <button onclick="copiarPix()">
+      COPIAR PIX
+    </button>
+
+    <p id="status"></p>
+
+    <div class="footer">
+      Pagamento direto para o estabelecimento
+    </div>
+
+  </main>
+
+  <script>
+    // COLOQUE AQUI O PIX COPIA E COLA DA LOJA
+    const pix = "COLOQUE_O_PIX_COPIA_E_COLA_AQUI";
+
+    new QRCode(document.getElementById("qrcode"), {
+      text: pix,
+      width: 210,
+      height: 210,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    async function copiarPix() {
+      try {
+        await navigator.clipboard.writeText(pix);
+        document.getElementById("status").innerText =
+          "Pix copiado! Agora abra seu banco.";
+      } catch (error) {
+        document.getElementById("status").innerText =
+          "Não foi possível copiar automaticamente.";
+      }
+    }
+  </script>
+
+</body>
+</html>
