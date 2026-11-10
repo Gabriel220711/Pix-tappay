@@ -1,144 +1,181 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TapPay - Pix</title>
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10131b">
+  <title>TapPay — pagamentos e contatos</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: #f3f5f4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .card {
-      background: white;
-      width: 100%;
-      max-width: 380px;
-      padding: 30px 22px;
-      border-radius: 22px;
-      text-align: center;
-      box-shadow: 0 8px 30px #00000012;
-    }
-
-    .logo {
-      font-size: 30px;
-      font-weight: bold;
-      color: #087d58;
-    }
-
-    .subtitle {
-      color: #777;
-      margin-bottom: 24px;
-    }
-
-    #qrcode {
-      display: flex;
-      justify-content: center;
-      margin: 20px auto;
-    }
-
-    #qrcode img, #qrcode canvas {
-      max-width: 210px;
-      height: auto;
-    }
-
-    .pix-label {
-      color: #555;
-      font-size: 14px;
-    }
-
-    button {
-      width: 100%;
-      padding: 16px;
-      border: none;
-      border-radius: 12px;
-      background: #087d58;
-      color: white;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 12px;
-    }
-
-    button:active {
-      opacity: .8;
-    }
-
-    .footer {
-      margin-top: 24px;
-      font-size: 12px;
-      color: #999;
-    }
-
-    #status {
-      font-size: 13px;
-      color: #087d58;
-      margin-top: 12px;
-    }
+    :root { color-scheme: dark; --bg:#10131b; --panel:#191f2b; --muted:#aab3c2; --line:#2b3444; --accent:#7c5cff; --white:#f7f8fc; }
+    * { box-sizing:border-box }
+    body { margin:0; min-height:100vh; padding:28px 16px; font-family:Inter,system-ui,Arial,sans-serif; color:var(--white); background:radial-gradient(circle at top,#242044 0,#10131b 45%); }
+    .wrap { width:min(100%,480px); margin:0 auto }
+    header { display:flex; align-items:center; justify-content:center; gap:10px; margin:10px 0 22px; font-weight:800; letter-spacing:.5px; font-size:25px }
+    .logo { display:grid; place-items:center; width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg,#9a83ff,#6041e8); box-shadow:0 8px 24px #6041e855 }
+    .card { background:linear-gradient(180deg,#1c2331,#171d28); border:1px solid var(--line); border-radius:22px; padding:24px; box-shadow:0 18px 55px #0005 }
+    .store { text-align:center; padding-bottom:20px; border-bottom:1px solid var(--line) }
+    .eyebrow { color:#a99aff; font-size:11px; text-transform:uppercase; letter-spacing:1.7px; font-weight:800 }
+    h1 { font-size:25px; margin:8px 0 5px; overflow-wrap:anywhere }
+    .sub { color:var(--muted); font-size:14px; margin:0 }
+    .section-title { font-size:14px; font-weight:750; margin:20px 0 12px }
+    .pix-box { background:#fff; border-radius:16px; padding:14px; width:fit-content; margin:0 auto 14px; min-width:190px; min-height:190px; display:grid; place-items:center }
+    #qrcode { display:flex; justify-content:center; align-items:center }
+    #qrcode img, #qrcode canvas { max-width:100%; height:auto }
+    .hint { color:var(--muted); text-align:center; font-size:12px; line-height:1.5; margin:0 0 15px }
+    .amount-label { display:block; color:var(--muted); font-size:12px; margin-bottom:7px }
+    input { width:100%; padding:13px 14px; border-radius:12px; border:1px solid var(--line); background:#111722; color:white; font-size:16px; outline:none }
+    input:focus { border-color:var(--accent) }
+    .btn { width:100%; border:0; border-radius:12px; padding:14px 16px; font-size:14px; font-weight:800; cursor:pointer; margin-top:10px; color:white; background:linear-gradient(135deg,#8b73ff,#6547ed) }
+    .btn.secondary { background:#252e3d; border:1px solid #394458 }
+    .pix-key { background:#111722; border:1px solid var(--line); border-radius:12px; padding:12px; color:#dce2ed; font-size:13px; overflow-wrap:anywhere; margin-top:12px }
+    .links { display:grid; gap:9px; margin-top:18px }
+    .link { display:block; text-decoration:none; text-align:center; color:#f3f4f8; background:#252e3d; border:1px solid #394458; padding:13px; border-radius:12px; font-weight:700; font-size:14px }
+    .wifi { margin-top:15px; background:#111722; border:1px solid var(--line); border-radius:12px; padding:13px; font-size:13px; line-height:1.6; overflow-wrap:anywhere }
+    footer { color:#7f899b; text-align:center; font-size:11px; margin:18px 0 0 }
+    .state { text-align:center; color:var(--muted); padding:35px 10px; line-height:1.6 }
+    .hidden { display:none !important }
+    @media (max-width:380px) { .card { padding:18px } }
   </style>
 </head>
-
 <body>
+  <main class="wrap">
+    <header><span class="logo">T</span> TapPay</header>
+    <section class="card">
+      <div id="loading" class="state">Carregando os dados do estabelecimento...</div>
+      <div id="error" class="state hidden"></div>
+      <div id="content" class="hidden">
+        <div class="store">
+          <div class="eyebrow">Pagamento seguro e rápido</div>
+          <h1 id="storeName">Estabelecimento</h1>
+          <p class="sub" id="storeDescription">Toque, confira e pague com Pix</p>
+        </div>
 
-  <main class="card">
+        <div id="payment" class="hidden">
+          <div class="section-title">Pague com Pix</div>
+          <div class="pix-box"><div id="qrcode"></div></div>
+          <p class="hint">Escaneie o QR Code pelo aplicativo do seu banco ou copie o código Pix abaixo.</p>
+          <label class="amount-label" for="amount">Valor (opcional)</label>
+          <input id="amount" inputmode="decimal" placeholder="Ex.: 25,00">
+          <button class="btn" id="copyPayload">Copiar código Pix</button>
+          <div class="pix-key"><strong>Chave Pix:</strong><br><span id="pixKey"></span></div>
+          <button class="btn secondary" id="copyKey">Copiar chave Pix</button>
+        </div>
 
-    <div class="logo">TapPay</div>
-    <p class="subtitle">Pagamento rápido e fácil</p>
-
-    <h3>Escaneie o QR Code Pix</h3>
-
-    <div id="qrcode"></div>
-
-    <p class="pix-label">Ou copie o código Pix abaixo:</p>
-
-    <button onclick="copiarPix()">
-      COPIAR PIX
-    </button>
-
-    <p id="status"></p>
-
-    <div class="footer">
-      Pagamento direto para o estabelecimento
-    </div>
-
+        <div class="links" id="links"></div>
+        <div class="wifi hidden" id="wifi"></div>
+      </div>
+    </section>
+    <footer>TapPay • aproxime, acesse e conecte</footer>
   </main>
 
-  <script>
-    // COLOQUE AQUI O PIX COPIA E COLA DA LOJA
-    const pix = "COLOQUE_O_PIX_COPIA_E_COLA_AQUI";
+<script>
+  // 1) Cole aqui os dados do seu projeto Supabase (Project Settings > API).
+  const SUPABASE_URL = "https://fsfpzqxlgkhmqxnwdacj.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_EbdpopOOsXdgRMUNs-DQWg_vdcQyw4Y";
 
-    new QRCode(document.getElementById("qrcode"), {
-      text: pix,
-      width: 210,
-      height: 210,
-      correctLevel: QRCode.CorrectLevel.M
-    });
+  const params = new URLSearchParams(location.search);
+  const slug = (params.get("id") || "").trim().toLowerCase();
+  const loading = document.getElementById("loading");
+  const errorBox = document.getElementById("error");
+  const content = document.getElementById("content");
+  let currentPixPayload = "";
+  let currentPixKey = "";
 
-    async function copiarPix() {
-      try {
-        await navigator.clipboard.writeText(pix);
-        document.getElementById("status").innerText =
-          "Pix copiado! Agora abra seu banco.";
-      } catch (error) {
-        document.getElementById("status").innerText =
-          "Não foi possível copiar automaticamente.";
-      }
+  function showError(message) {
+    loading.classList.add("hidden");
+    errorBox.textContent = message;
+    errorBox.classList.remove("hidden");
+  }
+  function tlv(id, value) {
+    const v = String(value);
+    return id + String(v.length).padStart(2, "0") + v;
+  }
+  function crc16(str) {
+    let crc = 0xFFFF;
+    for (let i = 0; i < str.length; i++) {
+      crc ^= str.charCodeAt(i) << 8;
+      for (let j = 0; j < 8; j++) crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+      crc &= 0xFFFF;
     }
-  </script>
-
+    return crc.toString(16).toUpperCase().padStart(4, "0");
+  }
+  function makePixPayload(key, name, city, amount) {
+    const merchant = tlv("00", "br.gov.bcb.pix") + tlv("01", key);
+    let payload = tlv("00", "01") + tlv("01", "12") + tlv("26", merchant) +
+      tlv("52", "0000") + tlv("53", "986");
+    if (amount !== null) payload += tlv("54", amount);
+    payload += tlv("58", "BR") + tlv("59", name.slice(0,25)) + tlv("60", city.slice(0,15)) +
+      tlv("62", tlv("05", "***")) + "6304";
+    return payload + crc16(payload);
+  }
+  function normalizedAmount() {
+    const raw = document.getElementById("amount").value.trim().replace(",", ".");
+    if (!raw) return null;
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n <= 0 || n > 999999.99) throw new Error("Digite um valor válido.");
+    return n.toFixed(2);
+  }
+  function renderQr(payload) {
+    const target = document.getElementById("qrcode");
+    target.innerHTML = "";
+    new QRCode(target, { text: payload, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M });
+  }
+  function refreshPix() {
+    const amount = normalizedAmount();
+    currentPixPayload = makePixPayload(currentPixKey, window.storeName, window.storeCity, amount);
+    renderQr(currentPixPayload);
+  }
+  async function copyText(value, successText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      alert(successText);
+    } catch {
+      alert("Não foi possível copiar automaticamente. Selecione e copie o conteúdo manualmente.");
+    }
+  }
+  function addLink(container, label, url) {
+    if (!url) return;
+    const a = document.createElement("a");
+    a.className = "link"; a.textContent = label; a.href = url;
+    a.target = "_blank"; a.rel = "noopener noreferrer";
+    container.appendChild(a);
+  }
+  async function start() {
+    if (!slug) return showError("Placa não identificada. Confira o link NFC enviado pela loja.");
+    if (SUPABASE_URL.startsWith("COLE_") || SUPABASE_ANON_KEY.startsWith("COLE_"))
+      return showError("O site ainda precisa ser conectado ao banco de dados Supabase. Siga o arquivo LEIA-ME.");
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data, error } = await client.from("lojas").select("*").eq("slug", slug).eq("ativa", true).maybeSingle();
+    if (error || !data) return showError("Não encontramos esse estabelecimento. Confira o identificador da placa.");
+    loading.classList.add("hidden"); content.classList.remove("hidden");
+    document.getElementById("storeName").textContent = data.nome || "Estabelecimento";
+    document.getElementById("storeDescription").textContent = data.descricao || "Toque, confira e pague com Pix";
+    const links = document.getElementById("links");
+    addLink(links, "Conversar pelo WhatsApp", data.whatsapp ? "https://wa.me/" + data.whatsapp.replace(/\D/g,"") : "");
+    addLink(links, "Instagram", data.instagram ? (data.instagram.startsWith("http") ? data.instagram : "https://instagram.com/" + data.instagram.replace("@","")) : "");
+    addLink(links, "LinkedIn", data.linkedin);
+    if (data.wifi_nome) {
+      const wifi = document.getElementById("wifi");
+      wifi.classList.remove("hidden");
+      wifi.textContent = "Wi-Fi: " + data.wifi_nome + (data.wifi_senha ? " • Senha: " + data.wifi_senha : "");
+    }
+    if (data.chave_pix) {
+      currentPixKey = data.chave_pix;
+      window.storeName = (data.nome_recebedor || data.nome || "TAPPAY").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase();
+      window.storeCity = (data.cidade || "SAO PAULO").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase();
+      document.getElementById("pixKey").textContent = currentPixKey;
+      document.getElementById("payment").classList.remove("hidden");
+      try { refreshPix(); } catch(e) { showError(e.message); }
+      document.getElementById("amount").addEventListener("input", () => {
+        try { refreshPix(); } catch(e) { document.getElementById("qrcode").textContent = e.message; }
+      });
+      document.getElementById("copyPayload").addEventListener("click", () => copyText(currentPixPayload, "Código Pix copiado!"));
+      document.getElementById("copyKey").addEventListener("click", () => copyText(currentPixKey, "Chave Pix copiada!"));
+    }
+  }
+  start();
+</script>
 </body>
 </html>
